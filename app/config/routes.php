@@ -45,3 +45,23 @@ defined('PREVENT_DIRECT_ACCESS') OR exit('No direct script access allowed');
 /** @var object $router **/
 
 $router->get('/', 'Welcome::index');
+$router->match('/login', 'AuthController::login', ['GET', 'POST']);
+$router->get('/logout', 'AuthController::logout');
+$router->match('/products/login', 'ProductAuthController::login', ['GET', 'POST']);
+$router->get('/products/logout', 'ProductAuthController::logout');
+
+$router->get('/student', 'StudentController::index');
+
+$router->get('/student/profile', 'StudentController::profile', [
+    'middleware' => ['student']
+]);
+
+$router->get('/users', 'UsersController::index');
+
+$router->group(['middleware' => ['product_auth']], function ($router) {
+    $router->get('/products', 'ProductController::index');
+    $router->match('/products/create', 'ProductController::create', ['GET', 'POST']);
+    $router->match('/products/edit/{id}', 'ProductController::edit', ['GET', 'POST']);
+    $router->get('/products/delete/{id}', 'ProductController::delete');
+    $router->post('/products/delete/{id}', 'ProductController::delete');
+});

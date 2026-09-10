@@ -96,7 +96,27 @@ class Middleware
             throw new Exception("Middleware [$middleware] not registered.");
         }
 
-        return $this->map[$middleware]->handle($next);
+        $handler = $this->map[$middleware];
+
+        if (is_string($handler)) {
+            $path = APP_DIR . 'middlewares/' . $handler . '.php';
+            if (!file_exists($path)) {
+                throw new Exception("Middleware class [$handler] not found.");
+            }
+
+            require_once $path;
+            if (!class_exists($handler)) {
+                throw new Exception("Middleware class [$handler] not found.");
+            }
+
+            $handler = new $handler();
+        }
+
+        if (!is_object($handler) || !method_exists($handler, 'handle')) {
+            throw new Exception("Middleware [$middleware] must define a handle method.");
+        }
+
+        return $handler->handle($next);
     }
 }
 
